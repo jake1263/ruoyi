@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<head>
+	<th:block th:include="include :: header('修改岗位')" />
+</head>
+<body class="white-bg">
+	<div class="wrapper wrapper-content animated fadeInRight ibox-content">
+		<form class="form-horizontal m" id="form-post-edit" th:object="${order}">
+			<input id="postId" name="orderId" type="hidden" th:field="*{orderId}"/>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">收货人姓名：</label>
+				<div class="col-sm-8">
+					<input class="form-control" type="text" name="receivingName" id="receivingName" th:field="*{receivingName}" required>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label ">收货人手机号码：</label>
+				<div class="col-sm-8">
+					<input class="form-control" type="text" name="receivingPhone" id="receivingPhone" th:field="*{receivingPhone}" required>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label ">收货人地址：</label>
+				<div class="col-sm-8">
+					<input class="form-control" type="text" name="receivingAddress" id="receivingAddress" th:field="*{receivingAddress}" required>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label ">订单金额：</label>
+				<div class="col-sm-8">
+					<input class="form-control" type="text" name="amount" id="amount" th:field="*{amount}" required>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label ">订单状态：</label>
+				<div class="col-sm-8">
+					<select name="orderStatus" th:with="type=${@dict.getType('oremouse_order_status')}">
+						<option  th:each="dict : ${type}"   th:selected="${order.orderStatus} eq ${dict.dictValue}"    th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+					</select>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">备注：</label>
+				<div class="col-sm-8">
+					<textarea id="remark" name="remark" class="form-control">[[*{remark}]]</textarea>
+				</div>
+			</div>
+		</form>
+	</div>
+	<th:block th:include="include :: footer" />
+	<script type="text/javascript">
+		var prefix = ctx + "oremouse/order";
+		
+		$("#form-post-edit").validate({
+			onkeyup: false,
+			rules:{
+                receivingPhone:{
+                    remote: {
+                        url: ctx + "oremouse/order/checkReceivingPhoneUnique",
+                        type: "post",
+                        dataType: "json",
+                        data: {
+                            "orderId": function() {
+                                return $("input[name='orderId']").val();
+                            },
+                            "receivingPhone" : function() {
+                                return $.common.trim($("#receivingPhone").val());
+                            }
+                        },
+                        dataFilter: function(data, type) {
+                            return $.validate.unique(data);
+                        }
+                    }
+                },
+				postSort:{
+					digits:true
+				},
+			},
+			messages: {
+		        "receivingPhone": {
+		            remote: "收货人手机号码已经存在"
+		        }
+		    },
+		    focusCleanup: true
+		});
+		
+		function submitHandler() {
+	        if ($.validate.form()) {
+	        	$.operate.save(prefix + "/edit", $('#form-post-edit').serialize());
+	        }
+	    }
+	</script>
+</body>
+</html>
